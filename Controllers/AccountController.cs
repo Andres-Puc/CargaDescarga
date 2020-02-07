@@ -8,6 +8,9 @@ using Scm.Infrastructure.ManagedResponses;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Scm.Data;
+using System.Collections.Generic;
+using System;
 
 namespace Scm.Controllers
 {
@@ -20,8 +23,12 @@ namespace Scm.Controllers
         private readonly RoleManager<AppRole> _roleManager;
         private readonly IConfiguration _configuration;
         private JwtSettings _jwtSettings;
+
+        private CuentaRepository _cuentaRepository;
         private IMapper _mapper;
-          public AccountController(UserManager<AppUser> userManager,SignInManager<AppUser> signInManager, IConfiguration configuration, JwtSettings jwtSettings, RoleManager<AppRole> roleManager, IMapper mapper)
+
+        private ScmContext _context;
+          public AccountController(UserManager<AppUser> userManager,SignInManager<AppUser> signInManager, IConfiguration configuration, JwtSettings jwtSettings, RoleManager<AppRole> roleManager, IMapper mapper,CuentaRepository cuentaRepository, ScmContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -29,6 +36,8 @@ namespace Scm.Controllers
             _jwtSettings = jwtSettings;
             _roleManager = roleManager;
             _mapper = mapper;
+            _cuentaRepository = cuentaRepository;
+            _context = context;
         }
         /// <summary>
         /// It create a new user on database
@@ -55,6 +64,28 @@ namespace Scm.Controllers
                 return BadRequest(new ManagedErrorResponse(ManagedErrorCode.Validation, "Identity validation errors", errors));
             }
         }
+
+        [HttpGet("Todos")]
+        public IActionResult Get(){
+            var Usuarios = _cuentaRepository.GetAll();
+            var UsuariosResult = _mapper.Map<List<RegisterUserResponseDto>>(Usuarios);
+            return Ok(UsuariosResult);
+        }
+
+        [HttpDelete("Eliminar")]
+        public string Eliminar(string UserId){
+                try{
+                    _cuentaRepository.Delete(UserId); ///inserta xd       
+                    _context.SaveChanges(); ///guarda en la base de datos
+
+                }catch(Exception e){
+                    Console.WriteLine(e);
+                    return e.ToString();
+                    
+                }
+            return "Se ha eliminado correctamente";
+        }
+
         /// <summary>
         /// Login method for get a token
         /// </summary>
