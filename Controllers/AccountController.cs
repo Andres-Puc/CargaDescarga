@@ -75,8 +75,8 @@ namespace Scm.Controllers
         [HttpDelete("Eliminar")]
         public string Eliminar(string UserId){
                 try{
-                    _cuentaRepository.Delete(UserId); ///inserta xd       
-                    _context.SaveChanges(); ///guarda en la base de datos
+                    _cuentaRepository.Delete(UserId);
+                    _context.SaveChanges(); 
 
                 }catch(Exception e){
                     Console.WriteLine(e);
@@ -84,6 +84,17 @@ namespace Scm.Controllers
                     
                 }
             return "Se ha eliminado correctamente";
+        }
+
+        [HttpPut("Modificar")]
+        public IActionResult Modificar(int idEmpleado, [FromBody] EmpleadoUpdateDto model){
+             
+        var Emp = _mapper.Map<Empleado>(model);
+        _EmpleadoRepository.Update(Emp);
+        _context.SaveChanges();
+            var Dto = _mapper.Map<EmpleadoResponseDto>(Emp);
+            
+            return Ok(Dto);
         }
 
         /// <summary>
